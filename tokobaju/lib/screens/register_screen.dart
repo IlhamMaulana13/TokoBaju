@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tokobaju/services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -12,34 +15,86 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _addressController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  final AuthService _authService = AuthService();
+
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _addressController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _handleRegister() {
+  void _handleRegister() async {
     if (_formKey.currentState!.validate()) {
-      // Logic placeholder, e.g. navigate back to login screen after register success
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Registrasi Berhasil! Silakan Login.',
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: const Color(0xFF4CAF50),
-        ),
-      );
-      Navigator.pop(context);
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        await _authService.registerWithEmailPassword(
+          _emailController.text.trim(),
+          _passwordController.text,
+          _nameController.text.trim(),
+        );
+
+        // Simpan alamat secara lokal menggunakan SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_address', _addressController.text.trim());
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Registrasi Berhasil! Silakan Login.',
+                style: GoogleFonts.poppins(),
+              ),
+              backgroundColor: const Color(0xFF4CAF50),
+            ),
+          );
+          Navigator.pop(context);
+        }
+      } on FirebaseAuthException catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                e.message ?? 'Registrasi gagal.',
+                style: GoogleFonts.poppins(),
+              ),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Terjadi kesalahan: $e',
+                style: GoogleFonts.poppins(),
+              ),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -52,7 +107,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1E232A), size: 20),
-          onPressed: () => Navigator.pop(context),
+          onPressed: _isLoading ? null : () => Navigator.pop(context),
         ),
       ),
       body: SafeArea(
@@ -95,6 +150,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _nameController,
+                  enabled: !_isLoading,
                   style: GoogleFonts.poppins(fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Masukkan nama lengkap Anda',
@@ -133,6 +189,58 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 20),
 
+                // Address Input
+                Text(
+                  'Alamat Lengkap',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1E232A),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _addressController,
+                  enabled: !_isLoading,
+                  maxLines: 2,
+                  style: GoogleFonts.poppins(fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: 'Masukkan alamat pengiriman lengkap Anda',
+                    hintStyle: GoogleFonts.poppins(color: Colors.grey[400], fontSize: 14),
+                    prefixIcon: const Icon(Icons.home_outlined, color: Colors.grey),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey[200]!),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey[200]!),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF1E232A), width: 1.5),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.redAccent, width: 1),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Alamat lengkap tidak boleh kosong';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+
                 // Email Input
                 Text(
                   'Email',
@@ -146,6 +254,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
+                  enabled: !_isLoading,
                   style: GoogleFonts.poppins(fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Masukkan email Anda',
@@ -200,6 +309,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
+                  enabled: !_isLoading,
                   style: GoogleFonts.poppins(fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Buat password minimal 6 karakter',
@@ -210,11 +320,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                         color: Colors.grey,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
+                      onPressed: _isLoading
+                          ? null
+                          : () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
                     ),
                     filled: true,
                     fillColor: Colors.white,
@@ -265,6 +377,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
+                  enabled: !_isLoading,
                   style: GoogleFonts.poppins(fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Ulangi password Anda',
@@ -275,11 +388,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                         color: Colors.grey,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureConfirmPassword = !_obscureConfirmPassword;
-                        });
-                      },
+                      onPressed: _isLoading
+                          ? null
+                          : () {
+                              setState(() {
+                                _obscureConfirmPassword = !_obscureConfirmPassword;
+                              });
+                            },
                     ),
                     filled: true,
                     fillColor: Colors.white,
@@ -321,7 +436,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 SizedBox(
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: _handleRegister,
+                    onPressed: _isLoading ? null : _handleRegister,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1E232A),
                       foregroundColor: Colors.white,
@@ -330,13 +445,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       elevation: 0,
                     ),
-                    child: Text(
-                      'Daftar',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            'Daftar',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -353,9 +477,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
+                      onTap: _isLoading
+                          ? null
+                          : () {
+                              Navigator.pop(context);
+                            },
                       child: Text(
                         'Login',
                         style: GoogleFonts.poppins(

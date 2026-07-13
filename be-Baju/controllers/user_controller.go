@@ -25,10 +25,11 @@ func SyncUser(c *gin.Context) {
 
 	// Jika tidak ketemu, berarti ini user baru (Register)
 	if result.Error != nil {
-		// Ambil data tambahan dari body request (misal nama dan email dari Flutter)
+		// Ambil data tambahan dari body request (misal nama, email, dan alamat dari Flutter)
 		var input struct {
-			Name  string `json:"name" binding:"required"`
-			Email string `json:"email" binding:"required"`
+			Name    string `json:"name" binding:"required"`
+			Email   string `json:"email" binding:"required"`
+			Address string `json:"address"`
 		}
 
 		if err := c.ShouldBindJSON(&input); err != nil {
@@ -40,6 +41,7 @@ func SyncUser(c *gin.Context) {
 			FirebaseUID: uidStr,
 			Name:        input.Name,
 			Email:       input.Email,
+			Address:     input.Address,
 			Role:        "customer", // Default role
 		}
 
