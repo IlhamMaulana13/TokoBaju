@@ -1,0 +1,19 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+
+# Environment Variables
+.env
+
+# Firebase Credentials (SANGAT PENTING)
+serviceAccountKey.json
+
+# Vendor & IDE
+vendor/
+.idea/
+.vscode/
+*.swp
