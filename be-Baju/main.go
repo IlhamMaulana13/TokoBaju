@@ -18,7 +18,17 @@ func main() {
 	}
 
 	config.ConnectDB()
-	config.DB.AutoMigrate(&models.User{}, &models.Product{}, &models.ProductSize{}, &models.Order{}, &models.OrderItem{})
+	config.DB.AutoMigrate(&models.User{}, &models.Product{}, &models.ProductSize{}, &models.Order{}, &models.OrderItem{}, &models.Review{})
+	
+	// Drop old stock column if it still exists in products table to prevent HY000 default value errors
+	if config.DB.Migrator().HasColumn(&models.Product{}, "stock") {
+		log.Println("⚠️ Menghapus kolom 'stock' lama dari tabel products...")
+		if err := config.DB.Migrator().DropColumn(&models.Product{}, "stock"); err != nil {
+			log.Println("❌ Gagal menghapus kolom 'stock':", err)
+		} else {
+			log.Println("✅ Kolom 'stock' berhasil dihapus!")
+		}
+	}
 	
 	config.ConnectFirebase()
 

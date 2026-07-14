@@ -11,6 +11,7 @@ bin/
 
 # Firebase Credentials (SANGAT PENTING)
 serviceAccountKey.json
+firebase-service-key.json
 
 # Vendor & IDE
 vendor/

@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tokobaju/providers/cart_provider.dart';
 import 'package:tokobaju/screens/main_screen.dart';
 
@@ -50,15 +53,57 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return 'Rp ${amount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
   }
 
-  void _handlePlaceOrder() {
+  void _handlePlaceOrder() async {
     if (_formKey.currentState!.validate()) {
-      // Jalankan fungsi clearCart dari CartProvider
-      context.read<CartProvider>().clearCart();
+      final address = _addressController.text.trim();
+      final items = widget.items.map((item) {
+        return {
+          'product_id': int.tryParse(item.productId) ?? 0,
+          'quantity': item.quantity,
+          'price': item.price,
+          'size': item.size,
+        };
+      }).toList();
 
-      // Show order creation success dialog
+      final payload = {
+        'shipping_address': address,
+        'total_price': widget.totalPrice,
+        'payment_method': 'COD',
+        'items': items,
+      };
+
+      // Tampilkan loading
       showDialog(
         context: context,
         barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator(color: Color(0xFF1E232A))),
+      );
+
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) throw Exception('Silakan login terlebih dahulu');
+        final token = await user.getIdToken();
+
+        final response = await http.post(
+          Uri.parse('http://192.168.1.4:8080/api/orders'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode(payload),
+        );
+
+        if (!context.mounted) return;
+        Navigator.pop(context); // Tutup loading
+
+        if (response.statusCode == 201) {
+          // Jalankan fungsi clearCart dari CartProvider
+          context.read<CartProvider>().clearCart();
+
+          // Show order creation success dialog
+          showDialog(
+            context: context,
+            barrierDismissible: false,
         builder: (BuildContext context) {
           return Dialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -133,6 +178,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           );
         },
       );
+        } else {
+          // response gagal
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Pesanan gagal dibuat.', style: GoogleFonts.poppins()),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      } catch (e) {
+        if (!context.mounted) return;
+        Navigator.pop(context); // Tutup loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal membuat pesanan: $e', style: GoogleFonts.poppins()),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
     }
   }
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
@@ -60,6 +61,15 @@ class AuthService {
         name ?? user.displayName ?? user.email?.split('@')[0] ?? 'User';
     final String finalEmail = user.email ?? '';
 
+    // Ambil FCM Token
+    String? fcmToken;
+    try {
+      fcmToken = await FirebaseMessaging.instance.getToken();
+      debugPrint('🔑 FCM Token: $fcmToken');
+    } catch (e) {
+      debugPrint('⚠️ Gagal mengambil FCM Token: $e');
+    }
+
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/api/auth/sync'),
@@ -70,6 +80,7 @@ class AuthService {
         body: jsonEncode({
           'name': finalName,
           'email': finalEmail,
+          'fcm_token': fcmToken,
         }),
       );
 

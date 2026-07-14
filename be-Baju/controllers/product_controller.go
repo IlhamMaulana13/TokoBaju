@@ -62,8 +62,15 @@ func CreateProduct(c *gin.Context) {
 
 // GetAllProducts mengambil semua produk
 func GetAllProducts(c *gin.Context) {
+	search := c.Query("search")
+	query := config.DB.Model(&models.Product{})
+
+	if search != "" {
+		query = query.Where("name LIKE ?", "%"+search+"%")
+	}
+
 	var products []models.Product
-	if err := config.DB.Preload("Sizes").Find(&products).Error; err != nil {
+	if err := query.Preload("Sizes").Find(&products).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil produk: " + err.Error()})
 		return
 	}

@@ -17,7 +17,7 @@ class ProductDetailScreen extends StatefulWidget {
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
   String? _selectedSize;
-  final List<String> _sizes = ['S', 'M', 'L', 'XL'];
+  final List<String> _sizes = ['M', 'L', 'XL'];
 
   // Helper to format currency
   String _formatCurrency(double amount) {
@@ -25,14 +25,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   void _addToCart() {
-    if (_selectedSize == null) {
+    if (_selectedSize == null || _selectedSize!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Silakan pilih ukuran terlebih dahulu!',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+            'Pilih ukuran terlebih dahulu!',
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
           ),
-          backgroundColor: const Color(0xFFFF6F61),
+          backgroundColor: Colors.red,
           duration: const Duration(seconds: 2),
         ),
       );

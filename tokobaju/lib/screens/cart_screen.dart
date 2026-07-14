@@ -23,15 +23,13 @@ class _CartScreenState extends State<CartScreen> {
     final cartItems = cart.cartItemList;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Text(
           'Keranjang Belanja',
           style: GoogleFonts.poppins(
-            color: const Color(0xFF1E232A),
+            color: Theme.of(context).textTheme.titleLarge?.color,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -50,7 +48,7 @@ class _CartScreenState extends State<CartScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1E232A),
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -73,7 +71,7 @@ class _CartScreenState extends State<CartScreen> {
                   margin: const EdgeInsets.only(bottom: 14),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -113,12 +111,12 @@ class _CartScreenState extends State<CartScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF1E232A),
+                                color: Theme.of(context).textTheme.bodyLarge?.color,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Ukuran: ${item.selectedSize}',
+                              'Ukuran: ${item.size}',
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -150,9 +148,9 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                           Container(
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF7F8FA),
+                              color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[850]! : const Color(0xFFF7F8FA),
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.grey[200]!),
+                              border: Border.all(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800]! : Colors.grey[200]!),
                             ),
                             child: Row(
                               children: [
@@ -160,9 +158,9 @@ class _CartScreenState extends State<CartScreen> {
                                   onTap: () {
                                     cart.decrementQuantity(item.id);
                                   },
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                                    child: Icon(Icons.remove, size: 16, color: Color(0xFF1E232A)),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                    child: Icon(Icons.remove, size: 16, color: Theme.of(context).textTheme.bodyLarge?.color),
                                   ),
                                 ),
                                 Text(
@@ -170,16 +168,16 @@ class _CartScreenState extends State<CartScreen> {
                                   style: GoogleFonts.poppins(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
-                                    color: const Color(0xFF1E232A),
+                                    color: Theme.of(context).textTheme.bodyLarge?.color,
                                   ),
                                 ),
                                 GestureDetector(
                                   onTap: () {
                                     cart.incrementQuantity(item.id);
                                   },
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                                    child: Icon(Icons.add, size: 16, color: Color(0xFF1E232A)),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                    child: Icon(Icons.add, size: 16, color: Theme.of(context).textTheme.bodyLarge?.color),
                                   ),
                                 ),
                               ],
@@ -197,7 +195,7 @@ class _CartScreenState extends State<CartScreen> {
           : Container(
               padding: const EdgeInsets.only(left: 24, right: 24, top: 16, bottom: 24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(24),
                   topRight: Radius.circular(24),
@@ -251,8 +249,8 @@ class _CartScreenState extends State<CartScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1E232A),
-                        foregroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

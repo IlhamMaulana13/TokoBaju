@@ -15,7 +15,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
-  final _stockSController = TextEditingController(text: '0');
   final _stockMController = TextEditingController(text: '0');
   final _stockLController = TextEditingController(text: '0');
   final _stockXLController = TextEditingController(text: '0');
@@ -32,7 +31,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
-    _stockSController.dispose();
     _stockMController.dispose();
     _stockLController.dispose();
     _stockXLController.dispose();
@@ -112,7 +110,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
       final double price = double.parse(_priceController.text);
       
       final List<Map<String, dynamic>> sizesList = [
-        {'size': 'S', 'stock': int.tryParse(_stockSController.text) ?? 0},
         {'size': 'M', 'stock': int.tryParse(_stockMController.text) ?? 0},
         {'size': 'L', 'stock': int.tryParse(_stockLController.text) ?? 0},
         {'size': 'XL', 'stock': int.tryParse(_stockXLController.text) ?? 0},
@@ -306,14 +303,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
               const SizedBox(height: 16),
 
               // Stok per Ukuran Section
-              _buildFormLabel('Stok per Ukuran'),
+              _buildFormLabel('Stok per Ukuran (M, L, XL)'),
               const SizedBox(height: 6),
               Row(
                 children: [
-                  Expanded(
-                    child: _buildStockInput('S', _stockSController),
-                  ),
-                  const SizedBox(width: 8),
                   Expanded(
                     child: _buildStockInput('M', _stockMController),
                   ),

@@ -1,9 +1,14 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:tokobaju/providers/theme_provider.dart';
 import 'package:tokobaju/screens/add_product_screen.dart';
 import 'package:tokobaju/screens/login_screen.dart';
 import 'package:tokobaju/services/admin_service.dart';
+import 'package:tokobaju/screens/admin_report_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -114,9 +119,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               ),
               padding: EdgeInsets.only(
                 top: 20,
@@ -145,7 +150,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1E232A),
+                        color: Theme.of(context).textTheme.titleLarge?.color,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -282,7 +287,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 }
                               },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1E232A),
+                          backgroundColor: Theme.of(context).colorScheme.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -333,19 +338,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             filled: true,
-            fillColor: const Color(0xFFF7F8FA),
+            fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[850] : const Color(0xFFF7F8FA),
             contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey[200]!),
+              borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800]! : Colors.grey[200]!),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey[200]!),
+              borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800]! : Colors.grey[200]!),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF1E232A)),
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
             ),
           ),
         ),
@@ -378,19 +383,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           style: GoogleFonts.poppins(fontSize: 14),
           decoration: InputDecoration(
             filled: true,
-            fillColor: const Color(0xFFF7F8FA),
+            fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[850] : const Color(0xFFF7F8FA),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: Colors.grey[200]!),
+              borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800]! : Colors.grey[200]!),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: Colors.grey[200]!),
+              borderSide: BorderSide(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800]! : Colors.grey[200]!),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF1E232A)),
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
             ),
           ),
         ),
@@ -483,7 +488,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               final int productId = product['id'] as int;
 
               return Card(
-                color: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -521,11 +525,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           children: [
                             Text(
                               product['name'] ?? '',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF1E232A),
-                              ),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                                ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -745,7 +749,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               final statusColor = _getStatusColor(status);
 
               return Card(
-                color: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -759,10 +762,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
+                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF0F1F5),
+                              color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : const Color(0xFFF0F1F5),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -770,7 +773,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF1E232A),
+                                color: Theme.of(context).textTheme.bodyLarge?.color,
                               ),
                             ),
                           ),
@@ -793,12 +796,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         ),
                       ),
                       Text(
-                        customerName,
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1E232A),
-                        ),
+                          customerName,
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                          ),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -813,7 +816,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         itemsText.isNotEmpty ? itemsText : '-',
                         style: GoogleFonts.poppins(
                           fontSize: 13,
-                          color: Colors.grey[800],
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -887,7 +890,85 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 onChanged: (String? newStatus) async {
                                   if (newStatus != null && newStatus != status) {
                                     try {
-                                      await _adminService.updateOrderStatus(orderId, newStatus);
+                                      String? proofOfDeliveryUrl;
+                                      
+                                      // Jika status diubah ke Delivered, minta gambar bukti pengiriman
+                                      if (newStatus == 'Delivered') {
+                                        if (!context.mounted) return;
+                                        final ImageSource? selectedSource = await showModalBottomSheet<ImageSource>(
+                                          context: context,
+                                          backgroundColor: Theme.of(context).cardColor,
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                                          ),
+                                          builder: (BuildContext context) {
+                                            return SafeArea(
+                                              child: Wrap(
+                                                children: [
+                                                  ListTile(
+                                                    leading: Icon(Icons.camera_alt, color: Theme.of(context).iconTheme.color),
+                                                    title: Text('Ambil dari Kamera', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                                                    onTap: () => Navigator.pop(context, ImageSource.camera),
+                                                  ),
+                                                  ListTile(
+                                                    leading: Icon(Icons.photo_library, color: Theme.of(context).iconTheme.color),
+                                                    title: Text('Pilih dari Galeri', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                                                    onTap: () => Navigator.pop(context, ImageSource.gallery),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        );
+
+                                        if (selectedSource == null) {
+                                          // Jika admin membatalkan pilihan sumber gambar, batalkan update status
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text('Status Delivered memerlukan bukti foto pengiriman.', style: GoogleFonts.poppins()),
+                                                backgroundColor: Colors.orange,
+                                              ),
+                                            );
+                                          }
+                                          return;
+                                        }
+
+                                        final picker = ImagePicker();
+                                        final XFile? pickedFile = await picker.pickImage(
+                                          source: selectedSource,
+                                          maxWidth: 1000,
+                                          maxHeight: 1000,
+                                          imageQuality: 80,
+                                        );
+                                        
+                                        if (pickedFile == null) {
+                                          // Jika admin membatalkan pilih gambar, batalkan update status
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text('Status Delivered memerlukan bukti foto pengiriman.', style: GoogleFonts.poppins()),
+                                                backgroundColor: Colors.orange,
+                                              ),
+                                            );
+                                          }
+                                          return;
+                                        }
+
+                                        // Upload gambar ke ImgBB
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Mengunggah bukti pengiriman...', style: GoogleFonts.poppins()),
+                                              backgroundColor: const Color(0xFF1E232A),
+                                              duration: const Duration(seconds: 2),
+                                            ),
+                                          );
+                                        }
+                                        proofOfDeliveryUrl = await _adminService.uploadImageToImgBB(File(pickedFile.path));
+                                      }
+
+                                      await _adminService.updateOrderStatus(orderId, newStatus, proofOfDelivery: proofOfDeliveryUrl);
                                       if (context.mounted) {
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(
@@ -941,36 +1022,50 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
-          'Dashboard Admin',
-          style: GoogleFonts.poppins(
-            color: const Color(0xFF1E232A),
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            'Dashboard Admin',
+            style: GoogleFonts.poppins(
+              color: Theme.of(context).textTheme.titleLarge?.color,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
           ),
         ),
         centerTitle: true,
         actions: [
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return IconButton(
+                icon: Icon(
+                  themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                ),
+                tooltip: themeProvider.isDarkMode ? 'Mode Gelap' : 'Mode Terang',
+                onPressed: () {
+                  themeProvider.toggleTheme(!themeProvider.isDarkMode);
+                },
+              );
+            },
+          ),
           Container(
             margin: const EdgeInsets.symmetric(vertical: 12),
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E232A),
+              color: Theme.of(context).colorScheme.primary,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.admin_panel_settings, color: Colors.white, size: 14),
+                Icon(Icons.admin_panel_settings, color: Theme.of(context).colorScheme.onPrimary, size: 14),
                 const SizedBox(width: 4),
                 Text(
                   'ADMIN',
                   style: GoogleFonts.poppins(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1029,13 +1124,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       body: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Center(
               child: Text(
-                _selectedIndex == 0 ? 'Kelola Katalog Produk' : 'Daftar Pesanan COD',
+                _selectedIndex == 0
+                    ? 'Kelola Katalog Produk'
+                    : _selectedIndex == 1
+                        ? 'Daftar Pesanan COD'
+                        : 'Laporan Penjualan',
                 style: GoogleFonts.poppins(
-                  color: Colors.grey[700],
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),
@@ -1043,7 +1142,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ),
           ),
           Expanded(
-            child: _selectedIndex == 0 ? _buildProductTab() : _buildOrdersTab(),
+            child: _selectedIndex == 0
+                ? _buildProductTab()
+                : _selectedIndex == 1
+                    ? _buildOrdersTab()
+                    : const AdminReportScreen(),
           ),
         ],
       ),
@@ -1058,14 +1161,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   _refreshProducts();
                 }
               },
-              backgroundColor: const Color(0xFF1E232A),
+              backgroundColor: Theme.of(context).colorScheme.primary,
               elevation: 4,
-              icon: const Icon(Icons.add, color: Colors.white),
+              icon: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
               label: Text(
                 'Tambah Produk',
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onPrimary,
                 ),
               ),
             )
@@ -1081,7 +1184,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ],
         ),
         child: BottomNavigationBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).cardColor,
           currentIndex: _selectedIndex,
           onTap: (index) {
             setState(() {
@@ -1109,6 +1212,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               icon: Icon(Icons.receipt_long_outlined),
               activeIcon: Icon(Icons.receipt_long),
               label: 'Pesanan COD',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.bar_chart_outlined),
+              activeIcon: Icon(Icons.bar_chart),
+              label: 'Laporan',
             ),
           ],
         ),

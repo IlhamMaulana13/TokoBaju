@@ -19,12 +19,17 @@ func SetupRouter() *gin.Engine {
 		api.GET("/products", controllers.GetAllProducts)
 	}
 
-	// Endpoint Protected (Wajib bawa token Firebase)
+	// Endpoint Protected (Wajib membawa token Firebase)
 	protected := r.Group("/api")
 	protected.Use(middleware.FirebaseAuth())
 	{
-		// Endpoint untuk sinkronisasi data user dari Firebase ke MySQL
 		protected.POST("/auth/sync", controllers.SyncUser)
+
+		// TAMBAHKAN DUA LINE INI DI DALAM PROTECTED GROUP
+		protected.POST("/orders", controllers.CreateOrder)
+		protected.GET("/orders/history", controllers.GetCustomerOrders)
+
+		protected.POST("/reviews", controllers.CreateReview)
 	}
 
 	// Endpoint Admin (Wajib bawa token Firebase & Memiliki role Admin)
@@ -40,6 +45,7 @@ func SetupRouter() *gin.Engine {
 		// Kelola Pesanan
 		admin.GET("/orders", controllers.GetAllOrders)
 		admin.PUT("/orders/:id/status", controllers.UpdateOrderStatus)
+		admin.GET("/reports", controllers.GetSalesReport)
 	}
 
 	return r

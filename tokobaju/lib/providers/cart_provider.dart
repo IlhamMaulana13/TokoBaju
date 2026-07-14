@@ -7,7 +7,7 @@ class CartItem {
   final double price;
   final int quantity;
   final String imageUrl;
-  final String selectedSize;
+  final String size;
 
   CartItem({
     required this.id,
@@ -16,7 +16,7 @@ class CartItem {
     required this.price,
     required this.quantity,
     required this.imageUrl,
-    required this.selectedSize,
+    required this.size,
   });
 }
 
@@ -51,8 +51,8 @@ class CartProvider with ChangeNotifier {
     return total;
   }
 
-  void addItem(String productId, String name, double price, String imageUrl, String selectedSize) {
-    final key = '$productId-$selectedSize';
+  void addItem(String productId, String name, double price, String imageUrl, String size) {
+    final key = '$productId-$size';
     if (_items.containsKey(key)) {
       // update quantity
       _items.update(
@@ -64,7 +64,7 @@ class CartProvider with ChangeNotifier {
           price: existingCartItem.price,
           quantity: existingCartItem.quantity + 1,
           imageUrl: existingCartItem.imageUrl,
-          selectedSize: existingCartItem.selectedSize,
+          size: existingCartItem.size,
         ),
       );
     } else {
@@ -78,7 +78,7 @@ class CartProvider with ChangeNotifier {
           price: price,
           quantity: 1,
           imageUrl: imageUrl,
-          selectedSize: selectedSize,
+          size: size,
         ),
       );
     }
@@ -101,7 +101,7 @@ class CartProvider with ChangeNotifier {
           price: existingCartItem.price,
           quantity: existingCartItem.quantity + 1,
           imageUrl: existingCartItem.imageUrl,
-          selectedSize: existingCartItem.selectedSize,
+          size: existingCartItem.size,
         ),
       );
       notifyListeners();
@@ -122,7 +122,7 @@ class CartProvider with ChangeNotifier {
           price: existingCartItem.price,
           quantity: existingCartItem.quantity - 1,
           imageUrl: existingCartItem.imageUrl,
-          selectedSize: existingCartItem.selectedSize,
+          size: existingCartItem.size,
         ),
       );
     } else {

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class AdminService {
   static const String baseUrl = 'http://192.168.1.4:8080';
@@ -173,13 +174,18 @@ class AdminService {
   /// PUT /api/admin/orders/:id/status — Memperbarui status pesanan
   ///
   /// [newStatus] harus salah satu dari: 'Pending', 'Packing', 'Shipped', 'Delivered'
-  Future<Map<String, dynamic>> updateOrderStatus(int orderId, String newStatus) async {
+  Future<Map<String, dynamic>> updateOrderStatus(int orderId, String newStatus, {String? proofOfDelivery}) async {
     final headers = await _buildHeaders();
     try {
+      final bodyData = {'status': newStatus};
+      if (proofOfDelivery != null) {
+        bodyData['proof_of_delivery'] = proofOfDelivery;
+      }
+
       final response = await http.put(
         Uri.parse('$baseUrl/api/admin/orders/$orderId/status'),
         headers: headers,
-        body: jsonEncode({'status': newStatus}),
+        body: jsonEncode(bodyData),
       );
 
       if (response.statusCode == 200) {
@@ -228,6 +234,57 @@ class AdminService {
       }
     } catch (e) {
       debugPrint('❌ Error saat mengunggah ke ImgBB: $e');
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // SALES REPORT ENDPOINT
+  // ============================================================
+
+  /// GET /api/admin/reports — Mengambil laporan penjualan berdasarkan rentang tanggal
+  Future<Map<String, dynamic>> getSalesReport(DateTime startDate, DateTime endDate) async {
+    final headers = await _buildHeaders();
+    final formatter = DateFormat('yyyy-MM-dd');
+    final startStr = formatter.format(startDate);
+    final endStr = formatter.format(endDate);
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/admin/reports?start_date=$startStr&end_date=$endStr'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        debugPrint('✅ getSalesReport berhasil: ${body['total_orders']} order');
+        return body as Map<String, dynamic>;
+      } else {
+        debugPrint('❌ getSalesReport gagal: ${response.statusCode} - ${response.body}');
+        throw Exception('Gagal mengambil laporan penjualan: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('❌ getSalesReport error: $e');
+      rethrow;
+    }
+  }
+
+  /// GET /api/products — Mengambil semua produk dengan query pencarian (Public)
+  Future<List<dynamic>> getPublicProducts(String query) async {
+    try {
+      final url = query.isEmpty
+          ? '$baseUrl/api/products'
+          : '$baseUrl/api/products?search=${Uri.encodeComponent(query)}';
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        return body['products'] as List<dynamic>;
+      } else {
+        throw Exception('Gagal mengambil produk publik: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('❌ getPublicProducts error: $e');
       rethrow;
     }
   }

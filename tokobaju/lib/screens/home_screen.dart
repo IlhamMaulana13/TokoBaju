@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:tokobaju/providers/cart_provider.dart';
 import 'package:tokobaju/screens/product_detail_screen.dart';
+import 'package:tokobaju/screens/order_history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,16 +23,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Dummy Product Data
   Future<List<dynamic>>? _productsFuture;
+  Timer? _debounce;
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    _productsFuture = _fetchProducts();
+    _productsFuture = _fetchProducts(query: _searchQuery);
   }
 
-  Future<List<dynamic>> _fetchProducts() async {
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  Future<List<dynamic>> _fetchProducts({String query = ''}) async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.4:8080/api/products'));
+      final url = query.isEmpty
+          ? 'http://192.168.1.4:8080/api/products'
+          : 'http://192.168.1.4:8080/api/products?search=${Uri.encodeComponent(query)}';
+      final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body);
         return body['products'] as List<dynamic>;
@@ -70,7 +83,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -93,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF1E232A),
+                              color: Theme.of(context).textTheme.bodyLarge?.color,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -119,8 +131,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.notifications_none_outlined, color: Color(0xFF1E232A)),
-                      onPressed: () {},
+                      icon: Icon(Icons.receipt_long, color: Theme.of(context).textTheme.bodyLarge?.color),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const OrderHistoryScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -134,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
@@ -145,6 +164,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         child: TextField(
+                          onChanged: (value) {
+                            if (_debounce?.isActive ?? false) _debounce!.cancel();
+                            _debounce = Timer(const Duration(milliseconds: 500), () {
+                              setState(() {
+                                _searchQuery = value.trim();
+                                _productsFuture = _fetchProducts(query: _searchQuery);
+                              });
+                            });
+                          },
                           decoration: InputDecoration(
                             hintText: 'Cari baju favoritmu...',
                             hintStyle: GoogleFonts.poppins(
@@ -162,12 +190,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E232A),
+                        color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.tune,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         size: 20,
                       ),
                     ),
@@ -263,11 +291,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.only(top: 24.0, left: 16.0, right: 16.0, bottom: 12.0),
                 child: Text(
                   'Kategori Terpopuler',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1E232A),
-                  ),
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                    ),
                 ),
               ),
               SizedBox(
@@ -289,10 +317,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         margin: const EdgeInsets.only(right: 10),
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF1E232A) : Colors.white,
+                          color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: isSelected ? Colors.transparent : Colors.grey[200]!,
+                            color: isSelected ? Colors.transparent : (Theme.of(context).brightness == Brightness.dark ? Colors.grey[800]! : Colors.grey[200]!),
                           ),
                         ),
                         child: Text(
@@ -300,7 +328,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 13,
                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                            color: isSelected ? Colors.white : Colors.grey[600],
+                            color: isSelected ? Colors.white : (Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[600]),
                           ),
                         ),
                       ),
@@ -320,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1E232A),
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),
                     Text(
@@ -423,7 +451,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: Theme.of(context).cardColor,
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
@@ -486,7 +514,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.9),
+                                          color: Theme.of(context).cardColor.withOpacity(0.9),
                                           borderRadius: BorderRadius.circular(6),
                                         ),
                                         child: Row(
@@ -496,7 +524,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             Text(
                                               rating.toStringAsFixed(1),
                                               style: GoogleFonts.poppins(
-                                                color: const Color(0xFF1E232A),
+                                                color: Theme.of(context).textTheme.bodyLarge?.color,
                                                 fontSize: 9,
                                                 fontWeight: FontWeight.bold,
                                               ),
@@ -528,11 +556,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                       product['name'] ?? '',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color(0xFF1E232A),
-                                      ),
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                                        ),
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
@@ -582,7 +610,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                         ),
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFF1E232A),
+                                          backgroundColor: Theme.of(context).colorScheme.primary,
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(8),
                                           ),
