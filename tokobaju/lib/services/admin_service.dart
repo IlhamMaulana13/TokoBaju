@@ -1,10 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class AdminService {
-  static const String baseUrl = 'http://192.168.1.5:8080';
+  static const String baseUrl = 'http://192.168.1.4:8080';
 
   // Helper untuk mengambil Firebase ID Token dari user yang sedang login
   Future<String?> getFirebaseToken() async {
@@ -191,6 +192,42 @@ class AdminService {
       }
     } catch (e) {
       debugPrint('❌ updateOrderStatus error: $e');
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // IMGBB IMAGE UPLOAD
+  // ============================================================
+
+  /// Mengunggah berkas gambar ke ImgBB dan mengembalikan URL publik gambarnya.
+  Future<String> uploadImageToImgBB(File imageFile) async {
+    try {
+      final uri = Uri.parse('https://api.imgbb.com/1/upload?key=2a90f301933df8f150375997315228ed');
+      final request = http.MultipartRequest('POST', uri);
+
+      // Tambahkan berkas gambar ke multipart request
+      final multipartFile = await http.MultipartFile.fromPath(
+        'image',
+        imageFile.path,
+      );
+      request.files.add(multipartFile);
+
+      debugPrint('📡 Mengirim gambar ke ImgBB...');
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        final String imageUrl = body['data']['url'];
+        debugPrint('✅ Unggah gambar berhasil: $imageUrl');
+        return imageUrl;
+      } else {
+        debugPrint('❌ Unggah gambar gagal: ${response.statusCode} - ${response.body}');
+        throw Exception('Gagal mengunggah gambar: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('❌ Error saat mengunggah ke ImgBB: $e');
       rethrow;
     }
   }

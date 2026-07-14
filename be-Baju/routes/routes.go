@@ -16,6 +16,7 @@ func SetupRouter() *gin.Engine {
 		api.GET("/ping", func(c *gin.Context) {
 			c.JSON(200, gin.H{"message": "Server be-Baju aman 🚀"})
 		})
+		api.GET("/products", controllers.GetAllProducts)
 	}
 
 	// Endpoint Protected (Wajib bawa token Firebase)

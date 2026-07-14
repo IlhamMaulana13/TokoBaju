@@ -17,6 +17,7 @@ func CreateProduct(c *gin.Context) {
 		Price       float64 `json:"price" binding:"required"`
 		Stock       *int    `json:"stock" binding:"required"`
 		ImageURL    string  `json:"image_url"`
+		Category    string  `json:"category"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -30,6 +31,8 @@ func CreateProduct(c *gin.Context) {
 		Price:       input.Price,
 		Stock:       *input.Stock,
 		ImageURL:    input.ImageURL,
+		Category:    input.Category,
+		Rating:      0.0,
 	}
 
 	if err := config.DB.Create(&product).Error; err != nil {
@@ -77,6 +80,7 @@ func UpdateProduct(c *gin.Context) {
 		Price       float64 `json:"price" binding:"required"`
 		Stock       *int    `json:"stock" binding:"required"`
 		ImageURL    string  `json:"image_url"`
+		Category    string  `json:"category"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -89,6 +93,7 @@ func UpdateProduct(c *gin.Context) {
 	product.Price = input.Price
 	product.Stock = *input.Stock
 	product.ImageURL = input.ImageURL
+	product.Category = input.Category
 
 	if err := config.DB.Save(&product).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal memperbarui produk: " + err.Error()})

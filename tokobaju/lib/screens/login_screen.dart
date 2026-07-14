@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tokobaju/screens/admin_dashboard_screen.dart';
@@ -34,47 +33,46 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Panggil signInWithEmailPassword yang kini me-return Map { credential, role }
-      final result = await _authService.signInWithEmailPassword(
+      // login() me-return Future<String?> — langsung berisi role dari backend
+      final String? userRole = await _authService.login(
         _emailController.text.trim(),
         _passwordController.text,
       );
 
       if (!mounted) return;
 
-      final String role = result?['role'] ?? 'customer';
-
-      // Routing berdasarkan role
-      if (role == 'admin') {
+      // Routing ketat berdasarkan role yang diterima dari backend
+      if (userRole == 'admin') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
+          MaterialPageRoute(builder: (_) => const AdminDashboardScreen()),
+        );
+      } else if (userRole == 'customer') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const MainScreen()),
         );
       } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainScreen()),
+        // Role null atau tidak dikenal — sinkronisasi backend gagal
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Login berhasil, namun gagal memuat data akun dari server. Coba lagi.',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: Colors.orange[800],
+          ),
         );
       }
-    } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e.message ?? 'Login gagal. Periksa email dan password Anda.',
-            style: GoogleFonts.poppins(),
-          ),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
     } catch (e) {
       if (!mounted) return;
+      // Tampilkan pesan error Firebase (wrong password, user not found, dll)
+      final String message = e.toString().contains('firebase_auth')
+          ? e.toString().split('] ').last
+          : 'Login gagal. Periksa email dan password Anda.';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Terjadi kesalahan: $e',
-            style: GoogleFonts.poppins(),
-          ),
+          content: Text(message, style: GoogleFonts.poppins()),
           backgroundColor: Colors.redAccent,
         ),
       );
