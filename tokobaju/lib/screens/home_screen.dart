@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:tokobaju/providers/cart_provider.dart';
+import 'package:tokobaju/screens/product_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -411,18 +412,27 @@ class _HomeScreenState extends State<HomeScreen> {
                         final double rating = (product['rating'] as num?)?.toDouble() ?? 0.0;
                         final double price = (product['price'] as num?)?.toDouble() ?? 0.0;
 
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.02),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProductDetailScreen(product: product),
                               ),
-                            ],
-                          ),
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.02),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -544,6 +554,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 product['name'] ?? '',
                                                 price,
                                                 imgUrl,
+                                                'M',
                                               );
                                           ScaffoldMessenger.of(context).hideCurrentSnackBar();
                                           ScaffoldMessenger.of(context).showSnackBar(
@@ -585,9 +596,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ],
                           ),
-                        );
-                      },
-                    );
+                        ),
+                      );
+                    },
+                  );
                   },
                 ),
               ),

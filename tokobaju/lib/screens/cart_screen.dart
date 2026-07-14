@@ -116,7 +116,16 @@ class _CartScreenState extends State<CartScreen> {
                                 color: const Color(0xFF1E232A),
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Ukuran: ${item.selectedSize}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            const SizedBox(height: 6),
                             Text(
                               formatCurrency(item.price),
                               style: GoogleFonts.poppins(
@@ -136,7 +145,7 @@ class _CartScreenState extends State<CartScreen> {
                           IconButton(
                             icon: const Icon(Icons.delete_outline, color: Colors.grey, size: 20),
                             onPressed: () {
-                              cart.removeItem(item.productId);
+                              cart.removeItem(item.id);
                             },
                           ),
                           Container(
@@ -149,7 +158,7 @@ class _CartScreenState extends State<CartScreen> {
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    cart.decrementQuantity(item.productId);
+                                    cart.decrementQuantity(item.id);
                                   },
                                   child: const Padding(
                                     padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
@@ -166,7 +175,7 @@ class _CartScreenState extends State<CartScreen> {
                                 ),
                                 GestureDetector(
                                   onTap: () {
-                                    cart.incrementQuantity(item.productId);
+                                    cart.incrementQuantity(item.id);
                                   },
                                   child: const Padding(
                                     padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),

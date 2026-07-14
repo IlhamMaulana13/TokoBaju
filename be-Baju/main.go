@@ -18,7 +18,7 @@ func main() {
 	}
 
 	config.ConnectDB()
-	config.DB.AutoMigrate(&models.User{}, &models.Product{}, &models.Order{}, &models.OrderItem{})
+	config.DB.AutoMigrate(&models.User{}, &models.Product{}, &models.ProductSize{}, &models.Order{}, &models.OrderItem{})
 	
 	config.ConnectFirebase()
 

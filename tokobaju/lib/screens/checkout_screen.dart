@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tokobaju/providers/cart_provider.dart';
+import 'package:tokobaju/screens/main_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final List<CartItem> items;
@@ -103,10 +104,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     height: 48,
                     child: ElevatedButton(
                       onPressed: () {
-                        // Pop dialog & pop checkout screen & pop cart screen to go back to Home
-                        Navigator.of(context).pop(); // dialog
-                        Navigator.of(context).pop(); // checkout_screen
-                        Navigator.of(context).pop(); // cart_screen
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => const MainScreen()),
+                          (route) => false,
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1E232A),

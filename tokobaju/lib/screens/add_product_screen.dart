@@ -15,7 +15,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
-  final _stockController = TextEditingController();
+  final _stockSController = TextEditingController(text: '0');
+  final _stockMController = TextEditingController(text: '0');
+  final _stockLController = TextEditingController(text: '0');
+  final _stockXLController = TextEditingController(text: '0');
   final _descriptionController = TextEditingController();
 
   File? _imageFile;
@@ -29,7 +32,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
-    _stockController.dispose();
+    _stockSController.dispose();
+    _stockMController.dispose();
+    _stockLController.dispose();
+    _stockXLController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
@@ -104,15 +110,21 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
       // 2. Buat produk di Golang backend
       final double price = double.parse(_priceController.text);
-      final int stock = int.parse(_stockController.text);
+      
+      final List<Map<String, dynamic>> sizesList = [
+        {'size': 'S', 'stock': int.tryParse(_stockSController.text) ?? 0},
+        {'size': 'M', 'stock': int.tryParse(_stockMController.text) ?? 0},
+        {'size': 'L', 'stock': int.tryParse(_stockLController.text) ?? 0},
+        {'size': 'XL', 'stock': int.tryParse(_stockXLController.text) ?? 0},
+      ];
 
       final data = {
         'name': _nameController.text.trim(),
         'price': price,
-        'stock': stock,
         'image_url': imageUrl,
         'category': _selectedCategory ?? 'Semua',
         'description': _descriptionController.text.trim(),
+        'sizes': sizesList,
       };
 
       await _adminService.createProduct(data);
@@ -272,59 +284,46 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: 16),
 
+              // Input Harga
+              _buildFormLabel('Harga (Rp)'),
+              const SizedBox(height: 6),
+              TextFormField(
+                controller: _priceController,
+                enabled: !_isSubmitting,
+                keyboardType: TextInputType.number,
+                style: GoogleFonts.poppins(fontSize: 14),
+                decoration: _buildInputDecoration('Contoh: 150000'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Harga wajib diisi';
+                  }
+                  if (double.tryParse(value) == null) {
+                    return 'Harus angka';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // Stok per Ukuran Section
+              _buildFormLabel('Stok per Ukuran'),
+              const SizedBox(height: 6),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildFormLabel('Harga (Rp)'),
-                        const SizedBox(height: 6),
-                        TextFormField(
-                          controller: _priceController,
-                          enabled: !_isSubmitting,
-                          keyboardType: TextInputType.number,
-                          style: GoogleFonts.poppins(fontSize: 14),
-                          decoration: _buildInputDecoration('Contoh: 150000'),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Harga wajib diisi';
-                            }
-                            if (double.tryParse(value) == null) {
-                              return 'Harus angka';
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
-                    ),
+                    child: _buildStockInput('S', _stockSController),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildFormLabel('Stok'),
-                        const SizedBox(height: 6),
-                        TextFormField(
-                          controller: _stockController,
-                          enabled: !_isSubmitting,
-                          keyboardType: TextInputType.number,
-                          style: GoogleFonts.poppins(fontSize: 14),
-                          decoration: _buildInputDecoration('Contoh: 50'),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Stok wajib diisi';
-                            }
-                            if (int.tryParse(value) == null) {
-                              return 'Harus angka';
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
-                    ),
+                    child: _buildStockInput('M', _stockMController),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildStockInput('L', _stockLController),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildStockInput('XL', _stockXLController),
                   ),
                 ],
               ),
@@ -378,6 +377,42 @@ class _AddProductScreenState extends State<AddProductScreen> {
         fontWeight: FontWeight.w600,
         color: Colors.grey[700],
       ),
+    );
+  }
+
+  Widget _buildStockInput(String label, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Ukuran $label',
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[600],
+          ),
+        ),
+        const SizedBox(height: 4),
+        TextFormField(
+          controller: controller,
+          enabled: !_isSubmitting,
+          keyboardType: TextInputType.number,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold),
+          decoration: _buildInputDecoration('0').copyWith(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+          ),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Wajib';
+            }
+            if (int.tryParse(value) == null) {
+              return 'Angka';
+            }
+            return null;
+          },
+        ),
+      ],
     );
   }
 

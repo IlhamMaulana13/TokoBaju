@@ -89,9 +89,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   void _showProductForm({Map<String, dynamic>? product}) {
     final nameController = TextEditingController(text: product?['name'] ?? '');
     final priceController = TextEditingController(text: product?['price']?.toString() ?? '');
-    final stockController = TextEditingController(text: product?['stock']?.toString() ?? '');
     final imageUrlController = TextEditingController(text: product?['image_url'] ?? '');
     final descriptionController = TextEditingController(text: product?['description'] ?? '');
+
+    // Initialize stock controllers
+    final sizesList = product?['sizes'] as List<dynamic>? ?? [];
+    int getStockForSize(String size) {
+      final sizeObj = sizesList.firstWhere((item) => item['size'] == size, orElse: () => null);
+      return sizeObj != null ? (sizeObj['stock'] as num?)?.toInt() ?? 0 : 0;
+    }
+
+    final stockSController = TextEditingController(text: product != null ? getStockForSize('S').toString() : '0');
+    final stockMController = TextEditingController(text: product != null ? getStockForSize('M').toString() : '0');
+    final stockLController = TextEditingController(text: product != null ? getStockForSize('L').toString() : '0');
+    final stockXLController = TextEditingController(text: product != null ? getStockForSize('XL').toString() : '0');
 
     bool isSaving = false;
 
@@ -149,14 +160,27 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             keyboardType: TextInputType.number,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildTextField(
-                            label: 'Stok',
-                            controller: stockController,
-                            keyboardType: TextInputType.number,
-                          ),
-                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Stok per Ukuran',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Expanded(child: _buildMiniStockField('S', stockSController)),
+                        const SizedBox(width: 6),
+                        Expanded(child: _buildMiniStockField('M', stockMController)),
+                        const SizedBox(width: 6),
+                        Expanded(child: _buildMiniStockField('L', stockLController)),
+                        const SizedBox(width: 6),
+                        Expanded(child: _buildMiniStockField('XL', stockXLController)),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -177,14 +201,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             : () async {
                                 final name = nameController.text.trim();
                                 final priceText = priceController.text.trim();
-                                final stockText = stockController.text.trim();
                                 final imageUrl = imageUrlController.text.trim();
                                 final description = descriptionController.text.trim();
 
-                                if (name.isEmpty || priceText.isEmpty || stockText.isEmpty) {
+                                if (name.isEmpty || priceText.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('Nama, Harga, dan Stok wajib diisi', style: GoogleFonts.poppins()),
+                                      content: Text('Nama dan Harga wajib diisi', style: GoogleFonts.poppins()),
                                       backgroundColor: Colors.orange,
                                     ),
                                   );
@@ -192,17 +215,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 }
 
                                 final double? price = double.tryParse(priceText);
-                                final int? stock = int.tryParse(stockText);
 
-                                if (price == null || stock == null) {
+                                if (price == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('Harga dan Stok harus berupa angka valid', style: GoogleFonts.poppins()),
+                                      content: Text('Harga harus berupa angka valid', style: GoogleFonts.poppins()),
                                       backgroundColor: Colors.orange,
                                     ),
                                   );
                                   return;
                                 }
+
+                                final List<Map<String, dynamic>> sizesPayload = [
+                                  {'size': 'S', 'stock': int.tryParse(stockSController.text) ?? 0},
+                                  {'size': 'M', 'stock': int.tryParse(stockMController.text) ?? 0},
+                                  {'size': 'L', 'stock': int.tryParse(stockLController.text) ?? 0},
+                                  {'size': 'XL', 'stock': int.tryParse(stockXLController.text) ?? 0},
+                                ];
 
                                 setModalState(() {
                                   isSaving = true;
@@ -212,9 +241,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                   final data = {
                                     'name': name,
                                     'price': price,
-                                    'stock': stock,
                                     'image_url': imageUrl,
                                     'description': description,
+                                    'sizes': sizesPayload,
                                   };
 
                                   if (product == null) {
@@ -283,6 +312,44 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           },
         );
       },
+    );
+  }
+
+  Widget _buildMiniStockField(String label, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Center(
+          child: Text(
+            label,
+            style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600),
+          ),
+        ),
+        const SizedBox(height: 4),
+        TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: const Color(0xFFF7F8FA),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[200]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[200]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF1E232A)),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -411,7 +478,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             itemBuilder: (context, index) {
               final product = productsList[index] as Map<String, dynamic>;
               final double price = (product['price'] as num?)?.toDouble() ?? 0.0;
-              final int stock = (product['stock'] as num?)?.toInt() ?? 0;
+              final sizesList = product['sizes'] as List<dynamic>? ?? [];
+              final int totalStock = sizesList.fold<int>(0, (sum, item) => sum + ((item['stock'] as num?)?.toInt() ?? 0));
               final int productId = product['id'] as int;
 
               return Card(
@@ -497,7 +565,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                'Stok: $stock',
+                                'Stok: $totalStock',
                                 style: GoogleFonts.poppins(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
