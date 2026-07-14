@@ -26,5 +26,20 @@ func SetupRouter() *gin.Engine {
 		protected.POST("/auth/sync", controllers.SyncUser)
 	}
 
+	// Endpoint Admin (Wajib bawa token Firebase & Memiliki role Admin)
+	admin := r.Group("/api/admin")
+	admin.Use(middleware.FirebaseAuth(), middleware.AdminOnly())
+	{
+		// CRUD Produk
+		admin.POST("/products", controllers.CreateProduct)
+		admin.GET("/products", controllers.GetAllProducts)
+		admin.PUT("/products/:id", controllers.UpdateProduct)
+		admin.DELETE("/products/:id", controllers.DeleteProduct)
+
+		// Kelola Pesanan
+		admin.GET("/orders", controllers.GetAllOrders)
+		admin.PUT("/orders/:id/status", controllers.UpdateOrderStatus)
+	}
+
 	return r
 }
