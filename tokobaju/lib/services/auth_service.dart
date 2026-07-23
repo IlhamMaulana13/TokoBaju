@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  static const String baseUrl = 'http://192.168.1.4:8080';
+  static const String baseUrl = 'https://tokobaju-ibu-ida.vercel.app';
 
   // ─────────────────────────────────────────────────────────────────────────
   // REGISTER — me-return role dari backend setelah sinkronisasi

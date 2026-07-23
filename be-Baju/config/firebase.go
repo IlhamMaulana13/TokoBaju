@@ -12,13 +12,24 @@ import (
 var FirebaseApp *firebase.App
 
 func ConnectFirebase() {
-	// Mengambil path file JSON dari .env (FIREBASE_CREDENTIALS=serviceAccountKey.json)
-	credFilePath := os.Getenv("FIREBASE_CREDENTIALS")
-	if credFilePath == "" {
-		log.Fatal("❌ FIREBASE_CREDENTIALS tidak ditemukan di file .env")
-	}
+	var opt option.ClientOption
 
-	opt := option.WithCredentialsFile(credFilePath)
+	if credJSON := os.Getenv("FIREBASE_CREDENTIALS_JSON"); credJSON != "" {
+		opt = option.WithCredentialsJSON([]byte(credJSON))
+		log.Println("🔑 Menggunakan FIREBASE_CREDENTIALS_JSON dari environment variable")
+	} else {
+		credFilePath := os.Getenv("FIREBASE_CREDENTIALS")
+		if credFilePath == "" {
+			credFilePath = "serviceAccountKey.json"
+		}
+
+		if _, err := os.Stat(credFilePath); err == nil {
+			opt = option.WithCredentialsFile(credFilePath)
+			log.Printf("🔑 Menggunakan file credentials dari path: %s\n", credFilePath)
+		} else {
+			log.Fatalf("❌ Firebase Credentials tidak ditemukan. Harap atur FIREBASE_CREDENTIALS_JSON atau file credentials di path %s", credFilePath)
+		}
+	}
 
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {

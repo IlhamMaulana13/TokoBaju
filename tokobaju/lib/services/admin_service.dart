@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 class AdminService {
-  static const String baseUrl = 'http://192.168.1.4:8080';
+  static const String baseUrl = 'https://tokobaju-ibu-ida.vercel.app';
 
   // Helper untuk mengambil Firebase ID Token dari user yang sedang login
   Future<String?> getFirebaseToken() async {
